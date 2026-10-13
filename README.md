@@ -21,7 +21,7 @@ This project provides a robust data pipeline to consume live market ticks from a
 
 ## Data Model
 
-The system uses a standardized `Tick` model to ensure compatibility:
+The system provides a standardized `Tick` model to ensure compatibility:
 
 ```python
 @dataclass
@@ -31,7 +31,7 @@ class Tick:
     ltp: float
     volume: int
 ```
-
+but currently it publishes the full tick, sample tick data provided
 ## Getting Started
 
 ### Prerequisites
