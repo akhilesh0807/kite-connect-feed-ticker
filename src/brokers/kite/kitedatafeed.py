@@ -1,6 +1,7 @@
 import logging
 from datetime import datetime
 from core.interfaces import BaseDataFeed
+from core.models import Tick
 from messenger.zmq_publisher import ZMQPublisher
 
 logging.basicConfig(level=logging.INFO)
@@ -47,7 +48,14 @@ class KiteDataFeed(BaseDataFeed):
             if isinstance(value, datetime):
                 tick[key] = value.isoformat()
 
-        return tick
+        normalized_tick = Tick(
+            symbol=tick["instrument_token"],
+            timestamp=tick["last_trade_time"],
+            ltp=tick["last_price"],
+            volume=tick["volume_traded"],
+        )
+
+        return normalized_tick
 
     def on_ticks(self, ws, ticks):
         """Callback to catch incoming ticks (live data stream)."""
