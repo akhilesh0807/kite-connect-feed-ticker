@@ -16,6 +16,6 @@ if __name__ == '__main__':
     # 738561 -> RELIANCE (NSE) - Replace with your required tokens
     # 969473 -> WIPRO
     tokens = [969473]
-    # initialise the datafeed with your
+    # initialise the datafeed with your ticker and tokens
     base_data_feed = KiteDataFeed(ticker, "ticks","tcp://127.0.0.1:5555",tokens)
     base_data_feed.start_feed()
