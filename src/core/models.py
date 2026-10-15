@@ -22,16 +22,16 @@ class Tick:
                 .pack(self.instrument_token, self.timestamp, self.ltp, self.volume)
                 )
 
-        TICK_STRUCT.pack_into(
-            reusable_buffer,
-            0,
-            self.instrument_token,
-            self.timestamp,
-            self.ltp,
-            self.volume,
-        )
-
-        return reusable_buffer
+        # TICK_STRUCT.pack_into(
+        #     reusable_buffer,
+        #     0,
+        #     self.instrument_token,
+        #     self.timestamp,
+        #     self.ltp,
+        #     self.volume,
+        # )
+        #
+        # return reusable_buffer
 
     @classmethod
     def from_bytes(cls, raw: bytes):
