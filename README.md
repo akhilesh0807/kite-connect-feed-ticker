@@ -70,17 +70,24 @@ flowchart TD
 
 ## Data Model
 
-The system provides a standardized `Tick` model to ensure compatibility:
+The system provides a high-performance, memory-efficient standardized `Tick` model utilizing `__slots__` and binary serialization (`struct` packer):
 
 ```python
-@dataclass
+@dataclass(slots=True)
 class Tick:
-    symbol: str
-    timestamp: datetime
+    instrument_token: int
+    timestamp: float
     ltp: float
     volume: int
+
+    def to_bytes(self) -> bytes:
+        return TICK_STRUCT.pack(self.instrument_token, self.timestamp, self.ltp, self.volume)
+
+    @classmethod
+    def from_bytes(cls, raw: bytes):
+        token, ts, ltp, vol = TICK_STRUCT.unpack(raw)
+        return cls(token, ts, ltp, vol)
 ```
-but currently it publishes the full tick, sample tick data provided
 ## Getting Started
 
 ### Prerequisites

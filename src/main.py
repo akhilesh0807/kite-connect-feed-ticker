@@ -12,6 +12,7 @@ if __name__ == '__main__':
     auth = KiteAuth(api_key=API_KEY, api_secret=API_SECRET)
     ACCESS_TOKEN = auth.login()
     print(ACCESS_TOKEN)
+    # once you have an access token for a day you can comment above and just re-run main function
     ticker = KiteTicker(api_key=API_KEY,access_token=ACCESS_TOKEN)
     # print(f"ACCES TOKEN {ACCESS_TOKEN}")
     # 256265 -> NIFTY 50 Index (NSE)
