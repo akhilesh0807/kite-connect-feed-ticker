@@ -24,8 +24,7 @@ class ZMQPublisher:
                 @functools.wraps(func)
                 async def async_wrapper(*args, **kwargs):
                     result = await func(*args, **kwargs)
-                    data = msgpack.packb(result, use_bin_type=True)
-                    self.publish(topic, data)
+                    self.publish(topic, result)
                     return result
 
                 return async_wrapper
@@ -33,8 +32,7 @@ class ZMQPublisher:
             @functools.wraps(func)
             def sync_wrapper(*args, **kwargs):
                 result = func(*args, **kwargs)
-                data = msgpack.packb(result, use_bin_type=True)
-                self.publish(topic, data)
+                self.publish(topic, result)
                 return result
 
             return sync_wrapper

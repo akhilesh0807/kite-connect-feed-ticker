@@ -3,8 +3,9 @@ A sample subscriber to subscribe to tick data published on "ticks" topic
 """
 
 import logging
-import msgpack
 import zmq
+
+from core.models import Tick
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger()
@@ -30,9 +31,9 @@ def run_subscriber():
 
 
             # Decode bytes to string and load back into a Python dictionary
-            tick = msgpack.unpackb(message_bytes, raw=False)
+            tick = Tick.from_bytes(message_bytes)
 
-            logger.log(logging.INFO, f"Received: {tick}")
+            logger.log(logging.INFO, f"Received: {tick.__str__()}")
     except KeyboardInterrupt:
         logger.log(logging.INFO,"\nShutting down subscriber.")
     finally:

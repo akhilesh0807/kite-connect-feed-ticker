@@ -14,6 +14,55 @@ This project provides a robust data pipeline to consume live market ticks from a
 
 ## Architecture
 
+```mermaid
+flowchart TD
+    subgraph BrokerExt ["External Broker API"]
+        KITE_API["Zerodha Kite Connect<br/>(WebSocket Feed / WSS)"]
+    end
+
+    subgraph IngesterApp ["Ingestion Pipeline (main.py)"]
+        direction TB
+        
+        subgraph CoreInterfaces ["src/core/interfaces.py & models.py"]
+            BASE_AUTH["BaseAuth<br/>(Auth Contract)"]
+            BASE_FEED["BaseDataFeed<br/>(Data Feed Contract)"]
+            TICK_MODEL["Tick Model<br/>(Standardized Data Class)"]
+        end
+
+        subgraph BrokerModule ["src/brokers/"]
+            KITE_IMPL["Kite Broker Connector<br/>(Implements BaseAuth & BaseDataFeed)"]
+        end
+
+        subgraph MessengerModule ["src/messenger/"]
+            ZMQ_PUB["ZeroMQ Messenger<br/>(ZMQ PUB Socket)"]
+        end
+
+        BASE_AUTH -.->|implements| KITE_IMPL
+        BASE_FEED -.->|implements| KITE_IMPL
+        KITE_IMPL -->|Raw Ticks Map to| TICK_MODEL
+        TICK_MODEL -->|Broadcast Tick| ZMQ_PUB
+    end
+
+    subgraph Consumers ["Downstream Consumption"]
+        SUB_SAMPLE["Sample Subscriber<br/>(src/datafeed/tick_subscriber.py / ZMQ SUB)"]
+        EXTERNAL_SERVICES["External Services<br/>(Trading Strategy / Storage / UI)"]
+    end
+
+    KITE_API ==>|Raw Ticks| KITE_IMPL
+    ZMQ_PUB ==>|"TCP Broadcast (Full Tick)"| SUB_SAMPLE
+    ZMQ_PUB -.->|TCP Broadcast| EXTERNAL_SERVICES
+
+    classDef broker fill:#ea580c,stroke:#c2410c,stroke-width:2px,color:#fff;
+    classDef core fill:#2563eb,stroke:#1d4ed8,stroke-width:2px,color:#fff;
+    classDef zmq fill:#7c3aed,stroke:#6d28d9,stroke-width:2px,color:#fff;
+    classDef sub fill:#059669,stroke:#047857,stroke-width:2px,color:#fff;
+
+    class KITE_API broker;
+    class BASE_AUTH,BASE_FEED,TICK_MODEL,KITE_IMPL core;
+    class ZMQ_PUB zmq;
+    class SUB_SAMPLE,EXTERNAL_SERVICES sub;
+```
+
 1.  **Broker Connector (`src/brokers/`):** Establishes a WebSocket connection to the broker (e.g., Zerodha KiteConnect), receives raw ticks, and maps them to the `Tick` model.
 2.  **Core Interfaces (`src/core/`):** Defines the contracts (`BaseAuth`, `BaseDataFeed`) for authentication and data ingestion.
 3.  **Messenger (`src/messenger/`):** A ZeroMQ publisher that broadcasts the normalized `Tick` objects.

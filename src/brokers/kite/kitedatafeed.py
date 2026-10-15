@@ -16,18 +16,19 @@ TIMESTAMP_KEYS = {
     "last_trade_time",
 }
 
+
 class KiteDataFeed(BaseDataFeed):
     def __init__(self, kiteticker, topic, endpoint, tokens):
         self.kws = kiteticker
         self.tokens = tokens
         self.publisher = ZMQPublisher(endpoint)
 
-        #Decorate the bound method using the initialized publisher.
+        self.topic = topic
+
+        # Decorate the bound method using the initialized publisher.
         self.publish_tick = self.publisher.publishZMQtopic(
             topic
         )(self.publish_tick)
-
-        self.topic = topic
 
         self.kws.on_ticks = self.on_ticks
         self.kws.on_connect = self.on_connect
@@ -39,20 +40,20 @@ class KiteDataFeed(BaseDataFeed):
 
     def publish_tick(self, tick):
         normalized_tick = self.normalize_tick(tick)
-        return normalized_tick
+        return normalized_tick.to_bytes()
 
-    def normalize_tick(self,tick):
+    def normalize_tick(self, tick):
         for key in TIMESTAMP_KEYS:
             value = tick.get(key)
 
             if isinstance(value, datetime):
-                tick[key] = value.isoformat()
+                tick[key] = value.timestamp()
 
         normalized_tick = Tick(
-            symbol=tick["instrument_token"],
-            timestamp=tick["last_trade_time"],
-            ltp=tick["last_price"],
-            volume=tick["volume_traded"],
+            tick["instrument_token"],
+            tick["last_trade_time"],
+            tick["last_price"],
+            tick["volume_traded"]
         )
 
         return normalized_tick
@@ -64,7 +65,7 @@ class KiteDataFeed(BaseDataFeed):
 
     def on_connect(self, ws, response):
         """Callback called when connection is successfully established."""
-        logger.log(logging.INFO,"Connected to Kite WebSocket successfully!")
+        logger.log(logging.INFO, "Connected to Kite WebSocket successfully!")
 
         tokens = self.tokens
 
